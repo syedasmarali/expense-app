@@ -4,6 +4,25 @@ import plotly.express as px
 from datetime import datetime
 import os
 
+# Function for creating filtered df
+def filter_dataframe(df, col_filters=None, date_range=None, date_col=None):
+    # Copying df
+    filtered_df = df.copy()
+
+    # Applying col filters
+    if col_filters:
+        for col, values in col_filters.items():
+            filtered_df = filtered_df[filtered_df[col].isin(values)]
+
+    # Apply date range filters if provided
+    if date_range:
+        start_date, end_date = date_range
+        filtered_df = filtered_df[(filtered_df[date_col] >= pd.to_datetime(start_date)) &
+                                  (filtered_df[date_col] <= pd.to_datetime(end_date))]
+
+    # Return filtered df
+    return filtered_df
+
 # Path to the CSV file where data will be saved (inside the data folder in root directory)
 DATA_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'expense_data.csv')
 
@@ -115,38 +134,39 @@ st.sidebar.header("Analyze Expenses")
 
 # Sidebar expander to analyze data
 with st.sidebar.expander("Analyze expenses", expanded=False):
-    # Date range selector for analysis
-    start_date = st.date_input("Start date")
-    end_date = st.date_input("End date")
+    # Convert to datetime
+    expense_data['Date'] = pd.to_datetime(expense_data['Date'], format='%d.%m.%Y', errors='coerce')
+
+    # Get the earliest and latest dates
+    min_date = expense_data['Date'].min().date()
+    max_date = expense_data['Date'].max().date()
+
+    # Date inputs in Streamlit with default values
+    start_date = st.date_input("Start Date", value=min_date, min_value=min_date, max_value=max_date)
+    end_date = st.date_input("End Date", value=max_date, min_value=min_date, max_value=max_date)
+
+    # Get date df
+    df_date = filter_dataframe(expense_data, date_range=(start_date, end_date), date_col='Date')
 
     # Category selector
-    unique_categories = expense_data['Category'].unique().tolist()
-    selected_category = st.selectbox("Select Category", options=["All"] + unique_categories)
+    unique_categories = df_date['Category'].unique()
+    selected_categories = st.multiselect('Select Category', unique_categories, default=unique_categories)
 
-    # Filter items based on the selected category
-    if selected_category != "All":
-        filtered_items = expense_data[expense_data['Category'] == selected_category]['Item'].unique().tolist()
-    else:
-        filtered_items = expense_data['Item'].unique().tolist()
+    # Get filtered category df
+    df_category = filter_dataframe(expense_data, col_filters={'Category': selected_categories},
+                                   date_range=(start_date, end_date), date_col='Date')
 
-    # Item selector based on the filtered category
-    selected_item = st.selectbox("Select Item", options=["All"] + filtered_items)
+    # Item selector
+    unique_items = df_category['Item'].unique()
+    selected_items = st.multiselect('Select Items', unique_items, default=unique_items)
 
-    # Filter data based on the selected date range, ensuring Date is comparable
-    filtered_data = expense_data[
-        (expense_data['Date'] >= start_date) &
-        (expense_data['Date'] <= end_date)  # Include end date
-        ]
-
-    # Filter by selected category and item (if not 'All')
-    if selected_category != "All":
-        filtered_data = filtered_data[filtered_data['Category'] == selected_category]
-
-    if selected_item != "All":
-        filtered_data = filtered_data[filtered_data['Item'] == selected_item]
+    # Get filtered date & category df
+    filtered_df = filter_dataframe(expense_data, col_filters={'Category': selected_categories,
+                                                              'Item': selected_items},
+                                   date_range=(start_date, end_date), date_col='Date')
 
 # Display total expenses
-total_cost = filtered_data['Cost in EUR'].sum()
+total_cost = filtered_df['Cost in EUR'].sum()
 total_cost = round(total_cost, 2)
 st.markdown("<h3 style='text-align: center;'>Total Expense</h1>",
                 unsafe_allow_html=True)
@@ -165,7 +185,7 @@ with col1:
                 unsafe_allow_html=True)
 
     # Group by date to get total cost per day
-    cost_over_time = filtered_data.groupby('Date')['Cost in EUR'].sum().reset_index()
+    cost_over_time = filtered_df.groupby('Date')['Cost in EUR'].sum().reset_index()
 
     # Create a line chart to show cost over time
     if not cost_over_time.empty:
@@ -184,28 +204,9 @@ with col2:
                 unsafe_allow_html=True)
 
     # Check if the filtered data is not empty
-    if not filtered_data.empty:
-        # Determine whether to group by Item or Category based on selection
-        if selected_category == "All":
-            # Group by category to get costs for all categories
-            category_cost = filtered_data.groupby('Category')['Cost in EUR'].sum().reset_index()
-
-            # Sort the costs from high to low
-            category_cost = category_cost.sort_values(by='Cost in EUR', ascending=False)
-
-            # Format the cost values to two decimal points
-            category_cost['Formatted Cost'] = category_cost['Cost in EUR'].map(lambda x: f"{x:.2f}")
-
-            # Create bar chart with formatted cost values on the bars
-            bar_fig = px.bar(category_cost, x='Category', y='Cost in EUR',
-                             title="Total Cost by Category",
-                             labels={'Cost in EUR': 'Total Cost in EUR'},
-                             text='Formatted Cost')  # Use the formatted cost
-            st.plotly_chart(bar_fig)
-
-        else:
+    if not filtered_df.empty:
             # Group by item to get costs for all items in the selected category
-            category_cost = filtered_data.groupby('Item')['Cost in EUR'].sum().reset_index()
+            category_cost = filtered_df.groupby('Item')['Cost in EUR'].sum().reset_index()
 
             # Sort the costs from high to low
             category_cost = category_cost.sort_values(by='Cost in EUR', ascending=False)
@@ -215,7 +216,7 @@ with col2:
 
             # Create bar chart with formatted cost values on the bars
             bar_fig = px.bar(category_cost, x='Item', y='Cost in EUR',
-                             title=f"Cost Breakdown for {selected_category}",
+                             title=f"Cost Breakdown",
                              labels={'Cost in EUR': 'Total Cost in EUR'},
                              text='Formatted Cost')  # Use the formatted cost
             st.plotly_chart(bar_fig)
@@ -226,25 +227,15 @@ with col2:
 # Add a divider
 st.divider()
 
-# Pie Chart
-st.markdown("<h3 style='text-align: center;'>Categorical Expense</h1>",
-            unsafe_allow_html=True)
+# Hierarchical chart
+st.markdown("<h3 style='text-align: center;'>Hierachical Expense</h1>", unsafe_allow_html=True)
 
 # Check if the filtered data is not empty
-if not filtered_data.empty:
-    # Determine whether to group by Item or Category based on selection
-    if selected_category == "All":
-        # Group by category to get costs for all categories
-        category_cost = filtered_data.groupby('Category')['Cost in EUR'].sum().reset_index()
-        fig = px.pie(category_cost, values='Cost in EUR', names='Category',
-                     title="Total Cost by Category")  # Display costs by category
-    else:
-        # Group by item to get costs for all items in the selected category
-        category_cost = filtered_data.groupby('Item')['Cost in EUR'].sum().reset_index()
-        fig = px.pie(category_cost, values='Cost in EUR', names='Item',
-                     title=f"Cost Breakdown for {selected_category}")  # Display costs by item in selected category
-
-    fig.update_traces(textinfo='percent+label+value')  # Show percentage, label, and value
+if not filtered_df.empty:
+    fig = px.icicle(filtered_df, path=[px.Constant("All Expenses"), 'Category', 'Item'],
+                    values='Cost in EUR', color='Item', title='Hierarchical Expenses')
+    fig.update_traces(texttemplate='%{label}<br>%{value} EUR', textinfo='label+text+value')
+    fig.update_layout(margin=dict(t=50, l=25, r=25, b=25))
     st.plotly_chart(fig)
 else:
     st.write("Please adjust your filters to see the cost breakdown or the data is empty.")
@@ -254,18 +245,18 @@ st.divider()
 
 # Display filtered grocery data
 st.subheader("Expense Data")
-st.dataframe(filtered_data)
+st.dataframe(filtered_df)
 
 # Add a divider
 st.divider()
 
 # Logic to delete an entry
 st.subheader("Delete an Entry")
-if not filtered_data.empty:
+if not filtered_df.empty:
     selected_rows = st.multiselect("Select rows to delete:",
-                                   options=filtered_data.index.tolist(),
+                                   options=filtered_df.index.tolist(),
                                    format_func=lambda
-                                       x: f"{filtered_data.loc[x, 'Date']} - {filtered_data.loc[x, 'Item']} - {filtered_data.loc[x, 'Category']} - {filtered_data.loc[x, 'Cost in EUR']}")
+                                       x: f"{filtered_df.loc[x, 'Date']} - {filtered_df.loc[x, 'Item']} - {filtered_df.loc[x, 'Category']} - {filtered_df.loc[x, 'Cost in EUR']}")
 
     if st.button("Delete Selected Items"):
         grocery_data = expense_data.drop(selected_rows).reset_index(drop=True)
