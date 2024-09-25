@@ -137,6 +137,9 @@ with st.sidebar.expander("Analyze expenses", expanded=False):
     # Convert to datetime
     expense_data['Date'] = pd.to_datetime(expense_data['Date'], format='%d.%m.%Y', errors='coerce')
 
+    # Extract days from the date
+    expense_data['Day'] = expense_data['Date'].dt.day_name()
+
     # Get the earliest and latest dates
     min_date = expense_data['Date'].min().date()
     max_date = expense_data['Date'].max().date()
@@ -232,7 +235,7 @@ st.markdown("<h3 style='text-align: center;'>Hierachical Expense</h1>", unsafe_a
 
 # Check if the filtered data is not empty
 if not filtered_df.empty:
-    fig = px.icicle(filtered_df, path=[px.Constant("All Expenses"), 'Category', 'Item'],
+    fig = px.icicle(filtered_df, path=[px.Constant("All Expenses"), 'Category', 'Item', 'Day'],
                     values='Cost in EUR', color='Item', title='Hierarchical Expenses')
     fig.update_traces(texttemplate='%{label}<br>%{value} EUR', textinfo='label+text+value')
     fig.update_layout(margin=dict(t=50, l=25, r=25, b=25))
