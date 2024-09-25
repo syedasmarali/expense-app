@@ -4,6 +4,9 @@ import plotly.express as px
 from datetime import datetime
 import os
 
+# Path to the CSV file where data will be saved (inside the data folder in root directory)
+DATA_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'expense_data.csv')
+
 # Function for creating filtered df
 def filter_dataframe(df, col_filters=None, date_range=None, date_col=None):
     # Copying df
@@ -22,9 +25,6 @@ def filter_dataframe(df, col_filters=None, date_range=None, date_col=None):
 
     # Return filtered df
     return filtered_df
-
-# Path to the CSV file where data will be saved (inside the data folder in root directory)
-DATA_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'expense_data.csv')
 
 # Function to load data from the CSV file and ensure Date is in datetime format
 def load_data():

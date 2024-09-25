@@ -4,3 +4,4 @@ venv
 
 # Ignore IDE settings
 .idea/
+.DS_Store
