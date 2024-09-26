@@ -64,7 +64,7 @@ def load_budget_data():
         return data
     else:
         # Create a DataFrame with empty 'Month', 'Year', 'Category', and 'Budget' columns
-        return pd.DataFrame(columns=['Month', 'Year', 'Category', 'Budget'])
+        return pd.DataFrame(columns=['Month', 'Year', 'Item', 'Category', 'Budget'])
 
 # Function to save budget data to the CSV file
 def save_budget_data(budget_data):
@@ -105,14 +105,63 @@ st.set_page_config(layout="wide")
 # region Load existing data to get unique items and categories
 items = expense_data['Item'].unique().tolist()
 categories = expense_data['Category'].unique().tolist()
+budget_items = budget_data['Item'].unique().tolist()
+budget_categories = budget_data['Category'].unique().tolist()
 # endregion Load existing data to get unique items and categories
 
 # region Initialize new_item and new_category to empty strings
 new_item = ""
+new_budget_item = ""
 new_category = ""
 new_budget_category = ""
 new_income_category = ""
 # endregion region Initialize new_item and new_category to empty strings
+
+# region Analyze expenses logic
+
+# Sidebar for adding new grocery items
+st.sidebar.header("Analyze Expenses")
+
+# Sidebar expander to analyze data
+with st.sidebar.expander("Analyze expenses", expanded=False):
+    # Convert to datetime
+    expense_data['Date'] = pd.to_datetime(expense_data['Date'], format='%d.%m.%Y', errors='coerce')
+
+    # Extract days from the date
+    expense_data['Day'] = expense_data['Date'].dt.day_name()
+
+    # Get the earliest and latest dates
+    min_date = expense_data['Date'].min().date()
+    max_date = expense_data['Date'].max().date()
+
+    # Date inputs in Streamlit with default values
+    start_date = st.date_input("Start Date", value=min_date, min_value=min_date, max_value=max_date)
+    end_date = st.date_input("End Date", value=max_date, min_value=min_date, max_value=max_date)
+
+    # Get date df
+    df_date = filter_dataframe(expense_data, date_range=(start_date, end_date), date_col='Date')
+
+    # Category selector
+    unique_categories = df_date['Category'].unique()
+    selected_categories = st.multiselect('Select Category', unique_categories, default=unique_categories)
+
+    # Get filtered category df
+    df_category = filter_dataframe(expense_data, col_filters={'Category': selected_categories},
+                                   date_range=(start_date, end_date), date_col='Date')
+
+    # Item selector
+    unique_items = df_category['Item'].unique()
+    selected_items = st.multiselect('Select Items', unique_items, default=unique_items)
+
+    # Get filtered date & category df
+    filtered_df = filter_dataframe(expense_data, col_filters={'Category': selected_categories,
+                                                              'Item': selected_items},
+                                   date_range=(start_date, end_date), date_col='Date')
+# endregion Analyze expenses logic
+
+# region Add a sidebar divider
+st.sidebar.divider()
+# endregion Add a sidebar divider
 
 # region Expense entry logic
 # Sidebar for adding new grocery items
@@ -178,6 +227,10 @@ with st.sidebar.expander("Expense Inputs", expanded=False):
             st.success(f"{item_to_add} added under {category_to_add} with a cost of {cost} EUR")
 # endregion Expense entry logic
 
+# region Add a sidebar divider
+st.sidebar.divider()
+# endregion Add a sidebar divider
+
 # region Dashboard title
 st.markdown("<h1 style='text-align: center;'>Expense Dashboard</h1>", unsafe_allow_html=True)
 # endregion Dashboard title
@@ -185,54 +238,6 @@ st.markdown("<h1 style='text-align: center;'>Expense Dashboard</h1>", unsafe_all
 # region Add a divider
 st.divider()
 # endregion Add a divider
-
-# region Analyze expenses logic
-# Add a sidebar divider
-st.sidebar.divider()
-
-# Sidebar for adding new grocery items
-st.sidebar.header("Analyze Expenses")
-
-# Sidebar expander to analyze data
-with st.sidebar.expander("Analyze expenses", expanded=False):
-    # Convert to datetime
-    expense_data['Date'] = pd.to_datetime(expense_data['Date'], format='%d.%m.%Y', errors='coerce')
-
-    # Extract days from the date
-    expense_data['Day'] = expense_data['Date'].dt.day_name()
-
-    # Get the earliest and latest dates
-    min_date = expense_data['Date'].min().date()
-    max_date = expense_data['Date'].max().date()
-
-    # Date inputs in Streamlit with default values
-    start_date = st.date_input("Start Date", value=min_date, min_value=min_date, max_value=max_date)
-    end_date = st.date_input("End Date", value=max_date, min_value=min_date, max_value=max_date)
-
-    # Get date df
-    df_date = filter_dataframe(expense_data, date_range=(start_date, end_date), date_col='Date')
-
-    # Category selector
-    unique_categories = df_date['Category'].unique()
-    selected_categories = st.multiselect('Select Category', unique_categories, default=unique_categories)
-
-    # Get filtered category df
-    df_category = filter_dataframe(expense_data, col_filters={'Category': selected_categories},
-                                   date_range=(start_date, end_date), date_col='Date')
-
-    # Item selector
-    unique_items = df_category['Item'].unique()
-    selected_items = st.multiselect('Select Items', unique_items, default=unique_items)
-
-    # Get filtered date & category df
-    filtered_df = filter_dataframe(expense_data, col_filters={'Category': selected_categories,
-                                                              'Item': selected_items},
-                                   date_range=(start_date, end_date), date_col='Date')
-# endregion Analyze expenses logic
-
-# region Add a sidebar divider
-st.sidebar.divider()
-# endregion Add a sidebar divider
 
 # region Budget entry logic
 # Sidebar for adding new budget items
@@ -248,49 +253,67 @@ with st.sidebar.expander("Budget Inputs", expanded=False):
         "July", "August", "September", "October", "November", "December"
     ]
 
-    # Initialize category and cost variables
-    selected_budget_category = ""
-    selected_budget = 0.01
-
     # Input for Month and Year
     selected_year = st.selectbox("Select Year", years)
     selected_month = st.selectbox("Select Month", month_names)
 
-    # Logic for entering budget category
-    budget_categories = budget_data['Category'].unique().tolist()
-    selected_budget_category = st.selectbox("Select Budget Category:", options=["", "Add Budget Category"] + budget_categories)
+    # Dropdown for selecting existing budget items
+    selected_budget_item = st.selectbox("Select Budget Item:", options=["", "Add Budget Item"] + budget_items)
+
+    # Initialize category and cost variables
+    selected_budget_category = ""
+    budget = 0.01
+
+    # If an existing item is selected, get the related category and budget
+    if selected_budget_item not in ["", "Add Budget Item"]:
+        # Get the row(s) corresponding to the selected item
+        budget_item_data = budget_data[budget_data['Item'] == selected_budget_item].iloc[0]
+        selected_budget_category = budget_item_data['Category']
+        budget = budget_item_data['Budget']
+
+    # Show the category dropdown, automatically selecting the corresponding category
+    selected_budget_category = st.selectbox("Select Budget Category:", options=["", "Add Budget Category"] + budget_categories, index=(
+                budget_categories.index(selected_budget_category) + 2) if selected_budget_category in budget_categories else 0)
+
+    # If Add Budget Item is selected, then display input for a new budget item
+    if selected_budget_item == "Add Budget Item":
+        new_budget_item = st.text_input("Enter a new budget item (if not listed):")
+
+    # If Add Budget Category is selected, then display input for a new budget category
     if selected_budget_category == "Add Budget Category":
         new_budget_category = st.text_input("Enter a new budget category (if not listed):")
 
-    # Logic for entering budget
-    if selected_budget_category not in ["", "Add Budget Category"]:
-        budget_category_data = budget_data[budget_data['Category'] == selected_budget_category].iloc[0]
-        selected_budget = budget_category_data['Budget']
-    selected_budget = st.number_input("Enter Budget Amount", min_value=0.01, step=0.01, value=selected_budget)
+    # Show the budget input, pre-filled with the value if an existing item was selected
+    budget = st.number_input("Enter Budget", min_value=0.01, step=0.01, value=budget)
 
-    if st.button("Add Budget"):
+    # Button to add the item
+    if st.button("Add Budget Item"):
         # Convert month name to index (1-12)
         selected_month_index = month_names.index(selected_month) + 1
 
-        # Logic for adding the budget
+        # Check if "Add Budget Item" or "Add Budget Category" is selected
+        budget_item_to_add = new_budget_item if new_budget_item else selected_budget_item
         budget_category_to_add = new_budget_category if new_budget_category else selected_budget_category
-        if selected_budget_category == "Add Budget Category" and not new_budget_category:
+        if selected_budget_item == "Add Budget Item" and not new_budget_item:
+            st.error("Please fill in the new budget item field.")
+        elif selected_budget_category == "Add Budget Category" and not new_budget_category:
             st.error("Please fill in the new budget category field.")
-        elif not budget_category_to_add:
-            st.error("Please select the budget category.")
+        elif not budget_item_to_add or not budget_category_to_add:
+            st.error("Please fill in both budget item and budget category.")
         else:
             # Create a new budget entry
             new_budget_entry = pd.DataFrame({
                 'Month': [selected_month_index],
                 'Year': [selected_year],
+                'Item': [budget_item_to_add],
                 'Category': [budget_category_to_add],
-                'Budget': [selected_budget]
+                'Budget': [budget]
             })
 
             # Save budget entry
             budget_data = pd.concat([budget_data, new_budget_entry], ignore_index=True)
             save_budget_data(budget_data)  # Save the updated data
-            st.success(f"Budget for {budget_category_to_add} of {selected_budget} added for {selected_month} {selected_year}")
+            st.success(f"Budget for {budget_item_to_add} under {budget_category_to_add} of {budget} added for {selected_month} {selected_year}")
 # endregion Budget entry logic
 
 # region Add a sidebar divider
@@ -532,7 +555,7 @@ with col2:
 
         if st.button("Delete Income Entry"):
             income_data = income_data.drop(selected_rows).reset_index(drop=True)
-            save_budget_data(income_data)  # Save the updated data
+            save_income_data(income_data)  # Save the updated data
             st.success("Selected items deleted!")
     else:
         st.write("No data available for the selected date range.")
