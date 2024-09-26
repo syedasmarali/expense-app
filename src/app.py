@@ -468,6 +468,7 @@ st.divider()
 # endregion Add a divider
 
 # region --- Expense Data Overview ---
+
 st.markdown("<h2 style='text-align: center;'>Expense Data Overview</h2>", unsafe_allow_html=True)
 
 # Columns
@@ -475,12 +476,12 @@ col1, col2 = st.columns(2)
 
 # Display filtered expense data
 with col1:
-    st.subheader("Expense Data")
+    st.markdown("<h4 style='text-align: center;'>Expense Data</h4>", unsafe_allow_html=True)
     st.dataframe(filtered_df)
 
 # Logic to delete an entry from expense data
 with col2:
-    st.subheader("Delete an Entry from the Expense Data")
+    st.markdown("<h4 style='text-align: center;'>Delete an Entry from the Expense Data</h4>", unsafe_allow_html=True)
     if not filtered_df.empty:
         selected_rows = st.multiselect("Select rows to delete:",
                                        options=filtered_df.index.tolist(),
@@ -493,6 +494,39 @@ with col2:
             st.success("Selected items deleted!")
     else:
         st.write("No data available for the selected date range.")
+
+    # Logic to edit the expense entry
+    st.markdown("<h4 style='text-align: center;'>Edit an Entry from the Expense Data</h4>", unsafe_allow_html=True)
+    if not filtered_df.empty:
+        # Allow user to select a row to edit, but no default selection
+        selected_row = st.selectbox("Select a row to edit:",
+                                    options=[None] + filtered_df.index.tolist(),  # Add 'None' as the default option
+                                    format_func=lambda
+                                        x: f"{filtered_df.loc[x, 'Date']} - {filtered_df.loc[x, 'Item']} - {filtered_df.loc[x, 'Category']} - {filtered_df.loc[x, 'Cost in EUR']}" if x is not None else "Select a row")
+        if selected_row is not None:
+            # Display editable fields only when a row is selected
+            selected_data = filtered_df.loc[selected_row]
+
+            st.markdown("<h4 style='text-align: center;'>Edit Entry</h4>", unsafe_allow_html=True)
+
+            # Allow user to edit the entry fields
+            new_date = st.date_input("Edit Date", value=pd.to_datetime(selected_data['Date']))
+            new_item = st.text_input("Edit Item", value=selected_data['Item'])
+            new_category = st.text_input("Edit Category", value=selected_data['Category'])
+            new_cost = st.number_input("Edit Cost (EUR)", value=selected_data['Cost in EUR'], step=0.01)
+
+            if st.button("Save Changes"):
+                # Update the selected row with new values
+                expense_data.at[selected_row, 'Date'] = new_date.strftime('%Y-%m-%d')  # Convert to string if needed
+                expense_data.at[selected_row, 'Item'] = new_item
+                expense_data.at[selected_row, 'Category'] = new_category
+                expense_data.at[selected_row, 'Cost in EUR'] = new_cost
+
+                # Save the updated DataFrame
+                save_data(expense_data)  # Function to save the DataFrame
+                st.success("Entry updated successfully!")
+    else:
+        st.write("No data available for the selected date range.")
 # endregion --- Expense Data Overview ---
 
 # region Add a divider
@@ -500,6 +534,7 @@ st.divider()
 # endregion Add a divider
 
 # region --- Budget Data Overview ---
+
 st.markdown("<h2 style='text-align: center;'>Budget Data Overview</h2>", unsafe_allow_html=True)
 
 # Columns
@@ -507,13 +542,13 @@ col1, col2 = st.columns(2)
 
 # Display filtered budget data
 with col1:
-    st.subheader("Budget Data")
+    st.markdown("<h4 style='text-align: center;'>Budget Data</h4>", unsafe_allow_html=True)
     budget_data['Year'] = budget_data['Year'].astype(str)
     st.dataframe(budget_data)
 
 # Logic to delete an entry from the budget data
 with col2:
-    st.subheader("Delete an Entry from the Budget Data")
+    st.markdown("<h4 style='text-align: center;'>Delete an Entry from the Budget Data</h4>", unsafe_allow_html=True)
     if not budget_data.empty:
         selected_rows = st.multiselect("Select rows to delete:",
                                        options=budget_data.index.tolist(),
@@ -524,6 +559,41 @@ with col2:
             budget_data = budget_data.drop(selected_rows).reset_index(drop=True)
             save_budget_data(budget_data)  # Save the updated data
             st.success("Selected items deleted!")
+    else:
+        st.write("No data available for the selected date range.")
+
+    # Logic to edit the budget entry
+    st.markdown("<h4 style='text-align: center;'>Edit an Entry from the Budget Data</h4>", unsafe_allow_html=True)
+    if not budget_data.empty:
+        # Allow user to select a row to edit, but no default selection
+        selected_row = st.selectbox("Select a row to edit:",
+                                    options=[None] + budget_data.index.tolist(),  # Add 'None' as the default option
+                                    format_func=lambda
+                                        x: f"{budget_data.loc[x, 'Month']} - {budget_data.loc[x, 'Year']} - {budget_data.loc[x, 'Category']} - {budget_data.loc[x, 'Budget']}" if x is not None else "Select a row")
+
+        if selected_row is not None:
+            # Display editable fields only when a row is selected
+            selected_data = budget_data.loc[selected_row]
+
+            st.markdown("<h4 style='text-align: center;'>Edit Entry</h4>", unsafe_allow_html=True)
+
+            # Allow user to edit the entry fields
+            new_month = st.selectbox("Edit Month", options=[f"{i:02d}" for i in range(1, 13)], index=int(
+                selected_data['Month']) - 1)  # Assuming month is in '01', '02', etc. format
+            new_year = st.text_input("Edit Year", value=selected_data['Year'])
+            new_category = st.text_input("Edit Category", value=selected_data['Category'])
+            new_budget = st.number_input("Edit Budget", value=selected_data['Budget'], step=0.01)
+
+            if st.button("Save Changes"):
+                # Update the selected row with new values
+                budget_data.at[selected_row, 'Month'] = new_month
+                budget_data.at[selected_row, 'Year'] = new_year
+                budget_data.at[selected_row, 'Category'] = new_category
+                budget_data.at[selected_row, 'Budget'] = new_budget
+
+                # Save the updated DataFrame
+                save_budget_data(budget_data)  # Function to save the updated data
+                st.success("Budget entry updated successfully!")
     else:
         st.write("No data available for the selected date range.")
 # endregion --- Budget Data Overview ---
@@ -540,13 +610,13 @@ col1, col2 = st.columns(2)
 
 # Display filtered income data
 with col1:
-    st.subheader("Income Data")
+    st.markdown("<h4 style='text-align: center;'>Income Data</h4>", unsafe_allow_html=True)
     income_data['Year'] = income_data['Year'].astype(str)
     st.dataframe(income_data)
 
 # Logic to delete an entry from the income data
 with col2:
-    st.subheader("Delete an Entry from the Income Data")
+    st.markdown("<h4 style='text-align: center;'>Delete an Entry from the Income Data</h4>", unsafe_allow_html=True)
     if not income_data.empty:
         selected_rows = st.multiselect("Select rows to delete:",
                                        options=income_data.index.tolist(),
@@ -559,4 +629,40 @@ with col2:
             st.success("Selected items deleted!")
     else:
         st.write("No data available for the selected date range.")
+
+    # Logic to edit the income entry
+    if not income_data.empty:
+        # Allow user to select a row to edit, but no default selection
+        selected_row = st.selectbox("Select a row to edit:",
+                                    options=[None] + income_data.index.tolist(),  # Add 'None' as the default option
+                                    format_func=lambda
+                                        x: f"{income_data.loc[x, 'Month']} - {income_data.loc[x, 'Year']} - {income_data.loc[x, 'Category']} - {income_data.loc[x, 'Income']}" if x is not None else "Select a row")
+
+        if selected_row is not None:
+            # Display editable fields only when a row is selected
+            selected_data = income_data.loc[selected_row]
+
+            st.write("### Edit Income Entry")
+            st.markdown("<h4 style='text-align: center;'>Edit Entry</h4>", unsafe_allow_html=True)
+
+            # Allow user to edit the entry fields
+            new_month = st.selectbox("Edit Month", options=[f"{i:02d}" for i in range(1, 13)], index=int(
+                selected_data['Month']) - 1)  # Assuming month is in '01', '02', etc. format
+            new_year = st.text_input("Edit Year", value=selected_data['Year'])
+            new_category = st.text_input("Edit Category", value=selected_data['Category'])
+            new_income = st.number_input("Edit Income", value=selected_data['Income'], step=0.01)
+
+            if st.button("Save Changes"):
+                # Update the selected row with new values
+                income_data.at[selected_row, 'Month'] = new_month
+                income_data.at[selected_row, 'Year'] = new_year
+                income_data.at[selected_row, 'Category'] = new_category
+                income_data.at[selected_row, 'Income'] = new_income
+
+                # Save the updated DataFrame
+                save_income_data(income_data)  # Function to save the updated data
+                st.success("Income entry updated successfully!")
+    else:
+        st.write("No data available for the selected date range.")
+
 # endregion --- Income Data Overview ---
