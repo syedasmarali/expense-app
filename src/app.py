@@ -170,11 +170,11 @@ st.sidebar.header("Add an Expense Item")
 # Sidebar with a collapsible expander
 with st.sidebar.expander("Expense Inputs", expanded=False):
     # Date selection
-    input_date = st.date_input("Enter the date", datetime.now())
+    input_date = st.date_input("Enter Date", datetime.now())
     expense_data['Date'] = pd.to_datetime(expense_data['Date'], format='%d.%m.%Y').dt.date  # Convert to datetime.date
 
     # Dropdown for selecting existing items and categories
-    selected_item = st.selectbox("Select item:", options=["", "Add Item"] + items)
+    selected_item = st.selectbox("Select Item:", options=["", "Add Item"] + items)
 
     # Initialize category and cost variables
     selected_category = ""
@@ -188,7 +188,7 @@ with st.sidebar.expander("Expense Inputs", expanded=False):
         cost = item_data['Cost in EUR']
 
     # Show the category dropdown, automatically selecting the corresponding category
-    selected_category = st.selectbox("Select category:", options=["", "Add Category"] + categories, index=(
+    selected_category = st.selectbox("Select Category:", options=["", "Add Category"] + categories, index=(
                 categories.index(selected_category) + 2) if selected_category in categories else 0)
 
     # If Add Item is selected, then display input for a new item
@@ -200,7 +200,7 @@ with st.sidebar.expander("Expense Inputs", expanded=False):
         new_category = st.text_input("Enter a new category (if not listed):")
 
     # Show the cost input, pre-filled with the value if an existing item was selected
-    cost = st.number_input("Enter cost in EUR", min_value=0.01, step=0.01, value=cost)
+    cost = st.number_input("Enter Expense", min_value=0.01, step=0.01, value=cost)
 
     # Button to add the item
     if st.button("Add Item"):
