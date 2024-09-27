@@ -373,13 +373,15 @@ with st.sidebar.expander("Add Budget", expanded=False):
                 'Year': [selected_year],
                 'Item': [budget_item_to_add],
                 'Category': [budget_category_to_add],
-                'Budget': [budget]
+                'Budget': [budget],
+                'Currency': [currency]
             })
 
             # Save budget entry
             budget_data = pd.concat([budget_data, new_budget_entry], ignore_index=True)
             save_budget_data(budget_data)  # Save the updated data
-            st.success(f"Budget for {budget_item_to_add} under {budget_category_to_add} of {budget} added for {selected_month} {selected_year}")
+            st.success(f"Budget for {budget_item_to_add} under {budget_category_to_add} "
+                       f"of {budget} added for {selected_month} {selected_year} in {currency}")
 # endregion Budget entry logic
 
 # endregion Budget
@@ -448,13 +450,15 @@ with st.sidebar.expander("Add Income", expanded=False):
                 'Month': [selected_month_index],
                 'Year': [selected_year_income],
                 'Category': [income_category_to_add],
-                'Income': [selected_income]
+                'Income': [selected_income],
+                'Currency': [currency]
             })
 
             # Save budget entry
             income_data = pd.concat([income_data, new_income_entry], ignore_index=True)
             save_income_data(income_data)  # Save the updated data
-            st.success(f"Income for {income_category_to_add} of {selected_income} added for {selected_month_income} {selected_year_income}")
+            st.success(f"Income for {income_category_to_add} of {selected_income} added for "
+                       f"{selected_month_income} {selected_year_income} in {currency}")
 # endregion Income entry logic
 
 # endregion Income
@@ -596,6 +600,7 @@ with col2:
             new_item = st.text_input("Edit Item", value=selected_data['Item'])
             new_category = st.text_input("Edit Category", value=selected_data['Category'])
             new_cost = st.number_input("Edit Cost (EUR)", value=selected_data['Cost in EUR'], step=0.01)
+            new_currency = st.text_input("Edit Currency", value=selected_data['Currency'])
 
             if st.button("Save Changes"):
                 # Update the selected row with new values
@@ -603,12 +608,14 @@ with col2:
                 expense_data.at[selected_row, 'Item'] = new_item
                 expense_data.at[selected_row, 'Category'] = new_category
                 expense_data.at[selected_row, 'Cost in EUR'] = new_cost
+                expense_data.at[selected_row, 'Currency'] = new_currency
 
                 # Save the updated DataFrame
                 save_data(expense_data)  # Function to save the DataFrame
                 st.success("Entry updated successfully!")
     else:
         st.write("No data available for the selected date range.")
+
 # endregion --- Expense Data Overview ---
 
 # region Add a divider
@@ -635,7 +642,9 @@ with col2:
         selected_rows = st.multiselect("Select rows to delete:",
                                        options=budget_data.index.tolist(),
                                        format_func=lambda
-                                           x: f"{budget_data.loc[x, 'Month']} - {budget_data.loc[x, 'Year']} - {budget_data.loc[x, 'Category']} - {budget_data.loc[x, 'Budget']}")
+                                           x: f"{budget_data.loc[x, 'Month']} - {budget_data.loc[x, 'Year']} - {budget_data.loc[x, 'Item']} - "
+                                              f"{budget_data.loc[x, 'Category']} - {budget_data.loc[x, 'Budget']} - "
+                                              f"{budget_data.loc[x, 'Currency']}")
 
         if st.button("Delete Budget Entry"):
             budget_data = budget_data.drop(selected_rows).reset_index(drop=True)
@@ -651,7 +660,9 @@ with col2:
         selected_row = st.selectbox("Select a row to edit:",
                                     options=[None] + budget_data.index.tolist(),  # Add 'None' as the default option
                                     format_func=lambda
-                                        x: f"{budget_data.loc[x, 'Month']} - {budget_data.loc[x, 'Year']} - {budget_data.loc[x, 'Category']} - {budget_data.loc[x, 'Budget']}" if x is not None else "Select a row")
+                                        x: f"{budget_data.loc[x, 'Month']} - {budget_data.loc[x, 'Year']} - {budget_data.loc[x, 'Item']} - "
+                                           f"{budget_data.loc[x, 'Category']} - {budget_data.loc[x, 'Budget']} - "
+                                           f"{budget_data.loc[x, 'Currency']}" if x is not None else "Select a row")
 
         if selected_row is not None:
             # Display editable fields only when a row is selected
@@ -663,15 +674,19 @@ with col2:
             new_month = st.selectbox("Edit Month", options=[f"{i:02d}" for i in range(1, 13)], index=int(
                 selected_data['Month']) - 1)  # Assuming month is in '01', '02', etc. format
             new_year = st.text_input("Edit Year", value=selected_data['Year'])
+            new_item = st.text_input("Edit Item", value=selected_data['Item'])
             new_category = st.text_input("Edit Category", value=selected_data['Category'])
             new_budget = st.number_input("Edit Budget", value=selected_data['Budget'], step=0.01)
+            new_currency = st.text_input("Edit Currency", value=selected_data['Currency'])
 
             if st.button("Save Changes"):
                 # Update the selected row with new values
                 budget_data.at[selected_row, 'Month'] = new_month
                 budget_data.at[selected_row, 'Year'] = new_year
+                budget_data.at[selected_row, 'Item'] = new_item
                 budget_data.at[selected_row, 'Category'] = new_category
                 budget_data.at[selected_row, 'Budget'] = new_budget
+                budget_data.at[selected_row, 'Currency'] = new_currency
 
                 # Save the updated DataFrame
                 save_budget_data(budget_data)  # Function to save the updated data
@@ -703,7 +718,8 @@ with col2:
         selected_rows = st.multiselect("Select rows to delete:",
                                        options=income_data.index.tolist(),
                                        format_func=lambda
-                                           x: f"{income_data.loc[x, 'Month']} - {income_data.loc[x, 'Year']} - {income_data.loc[x, 'Category']} - {income_data.loc[x, 'Income']}")
+                                           x: f"{income_data.loc[x, 'Month']} - {income_data.loc[x, 'Year']} - {income_data.loc[x, 'Category']} - "
+                                              f"{income_data.loc[x, 'Income']} - {income_data.loc[x, 'Currency']}")
 
         if st.button("Delete Income Entry"):
             income_data = income_data.drop(selected_rows).reset_index(drop=True)
@@ -718,7 +734,8 @@ with col2:
         selected_row = st.selectbox("Select a row to edit:",
                                     options=[None] + income_data.index.tolist(),  # Add 'None' as the default option
                                     format_func=lambda
-                                        x: f"{income_data.loc[x, 'Month']} - {income_data.loc[x, 'Year']} - {income_data.loc[x, 'Category']} - {income_data.loc[x, 'Income']}" if x is not None else "Select a row")
+                                        x: f"{income_data.loc[x, 'Month']} - {income_data.loc[x, 'Year']} - {income_data.loc[x, 'Category']} - "
+                                           f"{income_data.loc[x, 'Income']} - {income_data.loc[x, 'Currency']}" if x is not None else "Select a row")
 
         if selected_row is not None:
             # Display editable fields only when a row is selected
@@ -733,6 +750,7 @@ with col2:
             new_year = st.text_input("Edit Year", value=selected_data['Year'])
             new_category = st.text_input("Edit Category", value=selected_data['Category'])
             new_income = st.number_input("Edit Income", value=selected_data['Income'], step=0.01)
+            new_currency = st.text_input("Edit Currency", value=selected_data['Currency'])
 
             if st.button("Save Changes"):
                 # Update the selected row with new values
@@ -740,6 +758,7 @@ with col2:
                 income_data.at[selected_row, 'Year'] = new_year
                 income_data.at[selected_row, 'Category'] = new_category
                 income_data.at[selected_row, 'Income'] = new_income
+                income_data.at[selected_row, 'Currency'] = new_currency
 
                 # Save the updated DataFrame
                 save_income_data(income_data)  # Function to save the updated data

@@ -1,25 +1,25 @@
-Month,Year,Item,Category,Budget
-10,2024,DE House Rent,DE Rental,681.54
-10,2024,DE Electricity,DE Rental,62.0
-10,2024,DE Radio,DE Rental,18.0
-10,2024,DE Car Fuel,DE Car Maintenance,70.0
-10,2024,DE Car Insurance,DE Insurances,572.0
-10,2024,Khadeeja,Khadeeja,35.0
-10,2024,DE Food,DE Food,500.0
-10,2024,DE Internet Fees,DE Internet,34.98
-10,2024,DE Rechtschutzversicherung,DE Insurances,16.04
-10,2024,DE Getsafe,DE Insurances,2.65
-10,2024,DE Mobile Internet,DE Mobile,18.0
-10,2024,Roomi Khala,Roomi Khala,50.0
-10,2024,Pinky,Pinky,20.0
-10,2024,Advanzia,DE Banking,400.0
-10,2024,Esaal Services,PK Misc,12.0
-10,2024,Playstation Installment,DE Entertainment,60.0
-10,2024,DE BC,DE BC,60.0
-10,2024,Sadqa Normal,Sadqa,3.5
-10,2024,Sadqa Imam,Sadqa,3.5
-10,2024,Extra,Extra,33.0
-10,2024,PK House Rent,PK Rental,135.0
-10,2024,PK Electricity,PK Rental,40.0
-10,2024,PK Gas,PK Rental,6.13
-10,2024,PK Household,PK Household,300.0
+Month,Year,Item,Category,Budget,Currency
+10,2024,DE House Rent,DE Rental,681.54,
+10,2024,DE Electricity,DE Rental,62.0,
+10,2024,DE Radio,DE Rental,18.0,
+10,2024,DE Car Fuel,DE Car Maintenance,70.0,
+10,2024,DE Car Insurance,DE Insurances,572.0,
+10,2024,Khadeeja,Khadeeja,35.0,
+10,2024,DE Food,DE Food,500.0,
+10,2024,DE Internet Fees,DE Internet,34.98,
+10,2024,DE Rechtschutzversicherung,DE Insurances,16.04,
+10,2024,DE Getsafe,DE Insurances,2.65,
+10,2024,DE Mobile Internet,DE Mobile,18.0,
+10,2024,Roomi Khala,Roomi Khala,50.0,
+10,2024,Pinky,Pinky,20.0,
+10,2024,Advanzia,DE Banking,400.0,
+10,2024,Esaal Services,PK Misc,12.0,
+10,2024,Playstation Installment,DE Entertainment,60.0,
+10,2024,DE BC,DE BC,60.0,
+10,2024,Sadqa Normal,Sadqa,3.5,
+10,2024,Sadqa Imam,Sadqa,3.5,
+10,2024,Extra,Extra,33.0,
+10,2024,PK House Rent,PK Rental,135.0,
+10,2024,PK Electricity,PK Rental,40.0,
+10,2024,PK Gas,PK Rental,6.13,
+10,2024,PK Household,PK Household,300.0,
