@@ -117,58 +117,33 @@ new_budget_category = ""
 new_income_category = ""
 # endregion region Initialize new_item and new_category to empty strings
 
-# region Analyze expenses logic
+# region Add new columns
 
-# Sidebar for adding new grocery items
-st.sidebar.header("Analyze Expenses")
+# Check if 'Currency' column is present in expense data
+if 'Currency' not in expense_data.columns:
+    # Add 'Currency' column with default value None
+    expense_data['Currency'] = None
 
-# Sidebar expander to analyze data
-with st.sidebar.expander("Analyze expenses", expanded=False):
-    # Convert to datetime
-    expense_data['Date'] = pd.to_datetime(expense_data['Date'], format='%d.%m.%Y', errors='coerce')
+# Check if 'Currency' column is present in budget data
+if 'Currency' not in budget_data.columns:
+    # Add 'Currency' column with default value None
+    budget_data['Currency'] = None
 
-    # Extract days from the date
-    expense_data['Day'] = expense_data['Date'].dt.day_name()
+# Check if 'Currency' column is present in income data
+if 'Currency' not in income_data.columns:
+    # Add 'Currency' column with default value None
+    income_data['Currency'] = None
 
-    # Get the earliest and latest dates
-    min_date = expense_data['Date'].min().date()
-    max_date = expense_data['Date'].max().date()
+# endregion Add new columns
 
-    # Date inputs in Streamlit with default values
-    start_date = st.date_input("Start Date", value=min_date, min_value=min_date, max_value=max_date)
-    end_date = st.date_input("End Date", value=max_date, min_value=min_date, max_value=max_date)
+# region Expenses
 
-    # Get date df
-    df_date = filter_dataframe(expense_data, date_range=(start_date, end_date), date_col='Date')
-
-    # Category selector
-    unique_categories = df_date['Category'].unique()
-    selected_categories = st.multiselect('Select Category', unique_categories, default=unique_categories)
-
-    # Get filtered category df
-    df_category = filter_dataframe(expense_data, col_filters={'Category': selected_categories},
-                                   date_range=(start_date, end_date), date_col='Date')
-
-    # Item selector
-    unique_items = df_category['Item'].unique()
-    selected_items = st.multiselect('Select Items', unique_items, default=unique_items)
-
-    # Get filtered date & category df
-    filtered_df = filter_dataframe(expense_data, col_filters={'Category': selected_categories,
-                                                              'Item': selected_items},
-                                   date_range=(start_date, end_date), date_col='Date')
-# endregion Analyze expenses logic
-
-# region Add a sidebar divider
-st.sidebar.divider()
-# endregion Add a sidebar divider
+st.sidebar.header("Expense")
 
 # region Expense entry logic
-# Sidebar for adding new grocery items
-st.sidebar.header("Add an Expense Item")
 
 # Sidebar with a collapsible expander
-with st.sidebar.expander("Expense Inputs", expanded=False):
+with st.sidebar.expander("Add Expense", expanded=False):
     # Date selection
     input_date = st.date_input("Enter Date", datetime.now())
     expense_data['Date'] = pd.to_datetime(expense_data['Date'], format='%d.%m.%Y').dt.date  # Convert to datetime.date
@@ -249,6 +224,64 @@ with st.sidebar.expander("Expense Inputs", expanded=False):
             st.success(f"{item_to_add} added under {category_to_add} with a cost of {cost} EUR")
 # endregion Expense entry logic
 
+# region Analyze expenses logic
+
+# Sidebar expander to analyze data
+with st.sidebar.expander("Analyze expense", expanded=False):
+    # Convert to datetime
+    expense_data['Date'] = pd.to_datetime(expense_data['Date'], format='%d.%m.%Y', errors='coerce')
+
+    # Extract days from the date
+    expense_data['Day'] = expense_data['Date'].dt.day_name()
+
+    # Get the earliest and latest dates
+    min_date = expense_data['Date'].min().date()
+    max_date = expense_data['Date'].max().date()
+
+    # Date inputs in Streamlit with default values
+    start_date = st.date_input("Start Date", value=min_date, min_value=min_date, max_value=max_date)
+    end_date = st.date_input("End Date", value=max_date, min_value=min_date, max_value=max_date)
+
+    # Get date df
+    df_date = filter_dataframe(expense_data, date_range=(start_date, end_date), date_col='Date')
+
+    # Category selector
+    unique_categories = df_date['Category'].unique()
+    selected_categories = st.multiselect('Select Category', unique_categories, default=unique_categories)
+
+    # Get filtered category df
+    df_category = filter_dataframe(expense_data, col_filters={'Category': selected_categories},
+                                   date_range=(start_date, end_date), date_col='Date')
+
+    # Item selector
+    unique_items = df_category['Item'].unique()
+    selected_items = st.multiselect('Select Items', unique_items, default=unique_items)
+
+    # Get filtered date & category df
+    filtered_df = filter_dataframe(expense_data, col_filters={'Category': selected_categories,
+                                                              'Item': selected_items},
+                                   date_range=(start_date, end_date), date_col='Date')
+
+    # Radio buttons for updating expense values
+    update_expense_value = st.radio('Update Expense Conversion Rate?', ['No', 'Yes'])
+
+    # Custom CSS to make radio buttons appear side by side
+    st.markdown(
+        """
+        <style>
+        div.stRadio > div {
+            display: flex;
+            flex-direction: row;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+# endregion Analyze expenses logic
+
+# endregion Expenses
+
 # region Add a sidebar divider
 st.sidebar.divider()
 # endregion Add a sidebar divider
@@ -261,12 +294,14 @@ st.markdown("<h1 style='text-align: center;'>Expense Dashboard</h1>", unsafe_all
 st.divider()
 # endregion Add a divider
 
+# region Budgets
+
+st.sidebar.header("Budget")
+
 # region Budget entry logic
-# Sidebar for adding new budget items
-st.sidebar.header("Add a Budget Item")
 
 # Sidebar expander to add budget
-with st.sidebar.expander("Budget Inputs", expanded=False):
+with st.sidebar.expander("Add Budget", expanded=False):
     # Get current year and month
     current_year = datetime.now().year
     years = list(range(current_year, current_year + 5))  # Adjust as needed
@@ -346,16 +381,20 @@ with st.sidebar.expander("Budget Inputs", expanded=False):
             st.success(f"Budget for {budget_item_to_add} under {budget_category_to_add} of {budget} added for {selected_month} {selected_year}")
 # endregion Budget entry logic
 
+# endregion Budget
+
 # region Add a sidebar divider
 st.sidebar.divider()
 # endregion Add a sidebar divider
 
+# region Income
+
+st.sidebar.header("Income")
+
 # region Income entry logic
-# Sidebar for adding new income items
-st.sidebar.header("Add an Income Item")
 
 # Sidebar expander to add income
-with st.sidebar.expander("Income Inputs", expanded=False):
+with st.sidebar.expander("Add Income", expanded=False):
     # Get current year and month
     current_year = datetime.now().year
     years = list(range(current_year, current_year + 5))  # Adjust as needed
@@ -416,6 +455,8 @@ with st.sidebar.expander("Income Inputs", expanded=False):
             save_income_data(income_data)  # Save the updated data
             st.success(f"Income for {income_category_to_add} of {selected_income} added for {selected_month_income} {selected_year_income}")
 # endregion Income entry logic
+
+# endregion Income
 
 # region --- Expense Visualization ---
 # Display total expenses
