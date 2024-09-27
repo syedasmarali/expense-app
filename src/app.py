@@ -202,6 +202,27 @@ with st.sidebar.expander("Expense Inputs", expanded=False):
     # Show the cost input, pre-filled with the value if an existing item was selected
     cost = st.number_input("Enter Expense", min_value=0.01, step=0.01, value=cost)
 
+    # Radio buttons for expense currency
+    currency = st.radio('Expense Currency:', ['EUR', 'PKR'])
+
+    # Check if expense is in EUR or PKR
+    if currency == 'PKR':
+        eur_pkr_rate = st.number_input("EUR to PKR", min_value=0.01, step=0.01, value=310.00)
+        cost = round(cost / eur_pkr_rate, 2)
+
+    # Custom CSS to make radio buttons appear side by side
+    st.markdown(
+        """
+        <style>
+        div.stRadio > div {
+            display: flex;
+            flex-direction: row;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     # Button to add the item
     if st.button("Add Item"):
         item_to_add = new_item if new_item else selected_item
@@ -214,6 +235,7 @@ with st.sidebar.expander("Expense Inputs", expanded=False):
             st.error("Please fill in the new category field.")
         elif not item_to_add or not category_to_add:
             st.error("Please fill in both item and category.")
+
         else:
             # Create a new entry
             new_data = pd.DataFrame({
@@ -286,6 +308,14 @@ with st.sidebar.expander("Budget Inputs", expanded=False):
     # Show the budget input, pre-filled with the value if an existing item was selected
     budget = st.number_input("Enter Budget", min_value=0.01, step=0.01, value=budget)
 
+    # Radio buttons for expense currency
+    currency = st.radio('Budget Currency:', ['EUR', 'PKR'])
+
+    # Check if expense is in EUR or PKR
+    if currency == 'PKR':
+        eur_pkr_rate = st.number_input("EUR - PKR", min_value=0.01, step=0.01, value=310.00)
+        budget = round(budget / eur_pkr_rate, 2)
+
     # Button to add the item
     if st.button("Add Budget Item"):
         # Convert month name to index (1-12)
@@ -353,6 +383,14 @@ with st.sidebar.expander("Income Inputs", expanded=False):
         income_category_data = income_data[income_data['Category'] == selected_income_category].iloc[0]
         selected_income = income_category_data['Income']
     selected_income = st.number_input("Enter Income Amount", min_value=0.01, step=0.01, value=selected_income)
+
+    # Radio buttons for expense currency
+    currency = st.radio('Income Currency:', ['EUR', 'PKR'])
+
+    # Check if expense is in EUR or PKR
+    if currency == 'PKR':
+        eur_pkr_rate = st.number_input("EUR to PKR Rate", min_value=0.01, step=0.01, value=310.00)
+        selected_income = round(selected_income / eur_pkr_rate, 2)
 
     if st.button("Add Income"):
         # Convert month name to index (1-12)
