@@ -217,11 +217,12 @@ with st.sidebar.expander("Add Expense", expanded=False):
                 'Date': [input_date],
                 'Item': [item_to_add],
                 'Category': [category_to_add],
-                'Cost in EUR': [cost]
+                'Cost in EUR': [cost],
+                'Currency': [currency]
             })
             expense_data = pd.concat([expense_data, new_data], ignore_index=True)
             save_data(expense_data)  # Save the updated data
-            st.success(f"{item_to_add} added under {category_to_add} with a cost of {cost} EUR")
+            st.success(f"{item_to_add} added under {category_to_add} with a cost of {cost} in {currency}")
 # endregion Expense entry logic
 
 # region Analyze expenses logic
@@ -565,7 +566,8 @@ with col2:
         selected_rows = st.multiselect("Select rows to delete:",
                                        options=filtered_df.index.tolist(),
                                        format_func=lambda
-                                           x: f"{filtered_df.loc[x, 'Date']} - {filtered_df.loc[x, 'Item']} - {filtered_df.loc[x, 'Category']} - {filtered_df.loc[x, 'Cost in EUR']}")
+                                           x: f"{filtered_df.loc[x, 'Date']} - {filtered_df.loc[x, 'Item']} - {filtered_df.loc[x, 'Category']} - {filtered_df.loc[x, 'Cost in EUR']} - "
+                                              f"{filtered_df.loc[x, 'Currency']}")
 
         if st.button("Delete Expense Entry"):
             grocery_data = expense_data.drop(selected_rows).reset_index(drop=True)
@@ -581,7 +583,8 @@ with col2:
         selected_row = st.selectbox("Select a row to edit:",
                                     options=[None] + filtered_df.index.tolist(),  # Add 'None' as the default option
                                     format_func=lambda
-                                        x: f"{filtered_df.loc[x, 'Date']} - {filtered_df.loc[x, 'Item']} - {filtered_df.loc[x, 'Category']} - {filtered_df.loc[x, 'Cost in EUR']}" if x is not None else "Select a row")
+                                        x: f"{filtered_df.loc[x, 'Date']} - {filtered_df.loc[x, 'Item']} - {filtered_df.loc[x, 'Category']} - {filtered_df.loc[x, 'Cost in EUR']} - "
+                                           f"{filtered_df.loc[x, 'Currency']}" if x is not None else "Select a row")
         if selected_row is not None:
             # Display editable fields only when a row is selected
             selected_data = filtered_df.loc[selected_row]

@@ -1,24 +1,24 @@
-Date,Item,Category,Cost in EUR,Day
-2024-10-01,DE House Rent,DE Rental,681.54,Tuesday
-2024-10-01,DE Electricity,DE Rental,62.0,Tuesday
-2024-10-01,DE Banking Fees,DE Banking,9.45,Tuesday
-2024-10-05,Playstation Installment,DE Entertainment,59.89,Saturday
-2024-10-10,DE Internet Fees,DE Internet,34.98,Thursday
-2024-10-10,DE Rechtschutzversicherung,DE Insurances,16.04,Thursday
-2024-10-10,DE Getsafe,DE Insurances,2.65,Thursday
-2024-09-22,Drinks,DE Food,5.34,Sunday
-2024-09-24,Drinks,DE Food,3.38,Tuesday
-2024-09-20,Lentils,DE Food,4.99,Friday
-2024-09-20,Snacks,DE Food,1.61,Friday
-2024-09-20,Condiments & Seasonings,DE Food,5.89,Friday
-2024-09-20,Bread,DE Food,3.49,Friday
-2024-09-20,Bread,DE Food,3.59,Friday
-2024-09-20,Meat,DE Food,24.78,Friday
-2024-09-20,Meat,DE Food,25.58,Friday
-2024-09-20,Misc,DE Food,3.99,Friday
-2024-10-01,DE BC,DE BC,100.0,Tuesday
-2024-09-26,DE Cleaning,DE Food,1.74,Thursday
-2024-09-26,DE Gift,DE Entertainment,6.79,Thursday
-2024-09-26,DE Gift,DE Entertainment,19.99,Thursday
-2024-09-26,Drinks,DE Food,3.72,Thursday
-2024-09-26,DE Trip,DE Entertainment,41.41,Thursday
+Date,Item,Category,Cost in EUR,Day,Currency
+2024-10-01,DE House Rent,DE Rental,681.54,Tuesday,
+2024-10-01,DE Electricity,DE Rental,62.0,Tuesday,
+2024-10-01,DE Banking Fees,DE Banking,9.45,Tuesday,
+2024-10-05,Playstation Installment,DE Entertainment,59.89,Saturday,
+2024-10-10,DE Internet Fees,DE Internet,34.98,Thursday,
+2024-10-10,DE Rechtschutzversicherung,DE Insurances,16.04,Thursday,
+2024-10-10,DE Getsafe,DE Insurances,2.65,Thursday,
+2024-09-22,Drinks,DE Food,5.34,Sunday,
+2024-09-24,Drinks,DE Food,3.38,Tuesday,
+2024-09-20,Lentils,DE Food,4.99,Friday,
+2024-09-20,Snacks,DE Food,1.61,Friday,
+2024-09-20,Condiments & Seasonings,DE Food,5.89,Friday,
+2024-09-20,Bread,DE Food,3.49,Friday,
+2024-09-20,Bread,DE Food,3.59,Friday,
+2024-09-20,Meat,DE Food,24.78,Friday,
+2024-09-20,Meat,DE Food,25.58,Friday,
+2024-09-20,Misc,DE Food,3.99,Friday,
+2024-10-01,DE BC,DE BC,100.0,Tuesday,
+2024-09-26,DE Cleaning,DE Food,1.74,Thursday,
+2024-09-26,DE Gift,DE Entertainment,6.79,Thursday,
+2024-09-26,DE Gift,DE Entertainment,19.99,Thursday,
+2024-09-26,Drinks,DE Food,3.72,Thursday,
+2024-09-26,DE Trip,DE Entertainment,41.41,Thursday,
